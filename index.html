@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Número Misterioso | Adivina el número</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand__logo">KN</div>
+        <div>
+          <span class="brand__title">Kinetic Neon</span>
+          <span class="brand__subtitle">Operador_01</span>
+        </div>
+      </div>
+      <nav class="menu">
+        <button class="menu__item menu__item--active" type="button">Jugar</button>
+        <button class="menu__item" type="button">Historial</button>
+        <button class="menu__item" type="button">Logros</button>
+        <button class="menu__item" type="button">Soporte</button>
+      </nav>
+      <div class="theme-toggle">
+        <span>Modo</span>
+        <button id="themeToggle" class="theme-btn">Oscuro</button>
+      </div>
+      <button id="newGameBtn" class="primary-btn">Nueva partida</button>
+    </aside>
+
+    <main class="main-panel">
+      <header class="header-bar">
+        <div>
+          <h1>Número Misterioso</h1>
+          <p>Configura los parámetros y pon a prueba tu intuición.</p>
+        </div>
+        <div class="status-card" id="systemStatus">Estado: listo para ejecutar</div>
+      </header>
+
+      <section class="content-grid">
+        <section class="panel panel--settings">
+          <div class="panel__header">
+            <span>AJUSTES DE DIFICULTAD</span>
+            <span class="badge" id="difficultyBadge">Medio</span>
+          </div>
+
+          <div class="difficulty-cards">
+            <button class="diff-card diff-card--easy" data-mode="easy" type="button">
+              <span>FÁCIL</span>
+              <small>1-50 · Intentos ilimitados</small>
+            </button>
+            <button class="diff-card diff-card--medium active" data-mode="medium" type="button">
+              <span>MEDIO</span>
+              <small>1-100 · 10 intentos</small>
+            </button>
+            <button class="diff-card diff-card--hard" data-mode="hard" type="button">
+              <span>DIFÍCIL</span>
+              <small>1-500 · 5 intentos</small>
+            </button>
+          </div>
+
+          <div class="settings-grid">
+            <label>
+              Límite mínimo
+              <input id="minInput" type="number" min="1" value="1" />
+            </label>
+            <label>
+              Límite máximo
+              <input id="maxInput" type="number" min="2" value="100" />
+            </label>
+            <label>
+              Máximo de intentos
+              <input id="attemptsInput" type="number" min="1" value="10" />
+            </label>
+          </div>
+
+          <div class="settings-actions">
+            <span class="info-text" id="scoreText">Puntaje personal: 0</span>
+            <button id="resetConfigBtn" class="secondary-btn">Reiniciar configuración</button>
+          </div>
+        </section>
+
+        <section class="panel panel--game">
+          <div class="panel__header panel__header--alt">
+            <span>Secuencia Éter Activa</span>
+            <span class="hint" id="feedbackText">Introduce un número para empezar</span>
+          </div>
+
+          <div class="game-card">
+            <div class="display-number" id="currentGuess">00</div>
+            <div class="input-row">
+              <input id="guessInput" type="number" placeholder="Tu intento" aria-label="Tu intento" />
+              <button id="submitGuessBtn" class="primary-btn">Ejecutar intento</button>
+            </div>
+          </div>
+
+          <div class="stats-grid">
+            <div class="metric">
+              <span>Vidas restantes</span>
+              <strong id="remainingAttempts">10</strong>
+            </div>
+            <div class="metric">
+              <span>Racha actual</span>
+              <strong id="streakCount">0</strong>
+            </div>
+            <div class="metric">
+              <span>Precisión</span>
+              <strong id="precisionValue">0%</strong>
+            </div>
+          </div>
+        </section>
+
+        <aside class="panel panel--history">
+          <div class="panel__header">
+            <span>Historial de eventos</span>
+            <span id="historyCount">0 intentos</span>
+          </div>
+          <ul class="history-list" id="historyList"></ul>
+        </aside>
+      </section>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
