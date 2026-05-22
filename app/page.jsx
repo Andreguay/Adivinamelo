@@ -35,6 +35,7 @@ export default function HomePage() {
   const [gamesWon, setGamesWon] = useState(0);
   const [globalStats, setGlobalStats] = useState({ played: 0, wins: 0, averageAttempts: 0, maxScore: 0 });
   const [loadingStats, setLoadingStats] = useState(true);
+  const [activeTab, setActiveTab] = useState('game');
 
   const remainingAttempts = attempts - attemptCount;
   const precision = attemptCount === 0 ? 0 : Math.max(0, 100 - Math.floor((attemptCount / attempts) * 100));
@@ -212,6 +213,220 @@ export default function HomePage() {
     setStatus(`Intento ${nextAttempt}. Quedan ${attempts - nextAttempt} intentos.`);
   }
 
+  function renderMainContent() {
+    if (activeTab === 'history') {
+      return (
+        <section className="content-grid">
+          <section className="panel panel--history-full">
+            <div className="panel__header">
+              <span>Historial de partidas</span>
+              <span>{historyLabel}</span>
+            </div>
+            <ul className="history-list">
+              {history.map((entry) => (
+                <li key={entry.index} className={`history-item ${entry.outcome}`}>
+                  <span className="history-item__badge">
+                    {entry.outcome === 'success' ? 'Correcto' : entry.outcome === 'higher' ? 'Más alto' : 'Más bajo'}
+                  </span>
+                  <div>
+                    <span>Intento {entry.index}</span>
+                    <strong>{entry.guess}</strong>
+                  </div>
+                  <span>{entry.message}</span>
+                </li>
+              ))}
+              {history.length === 0 && <li className="history-item empty">Aún no hay eventos registrados.</li>}
+            </ul>
+          </section>
+        </section>
+      );
+    }
+
+    if (activeTab === 'achievements') {
+      return (
+        <section className="content-grid">
+          <section className="panel panel--settings">
+            <div className="panel__header">
+              <span>Estadísticas personales</span>
+              <span className="badge">{difficultyData.label}</span>
+            </div>
+            <div className="stats-grid">
+              <div className="metric">
+                <span>Mejor puntaje</span>
+                <strong>{record}</strong>
+              </div>
+              <div className="metric">
+                <span>Victorias</span>
+                <strong>{gamesWon}</strong>
+              </div>
+              <div className="metric">
+                <span>Partidas jugadas</span>
+                <strong>{globalStats.played}</strong>
+              </div>
+              <div className="metric">
+                <span>Promedio intentos</span>
+                <strong>{globalStats.averageAttempts}</strong>
+              </div>
+            </div>
+            <div className="settings-actions">
+              <span className="info-text">Estadísticas globales actualizadas</span>
+              {loadingStats && <span className="badge">Cargando...</span>}
+            </div>
+          </section>
+        </section>
+      );
+    }
+
+    if (activeTab === 'support') {
+      return (
+        <section className="content-grid">
+          <section className="panel panel--settings">
+            <div className="panel__header">
+              <span>Soporte y ayuda</span>
+              <span className="badge">Información</span>
+            </div>
+            <div className="settings-grid support-grid">
+              <div>
+                <h2>Cómo jugar</h2>
+                <p>Elige un modo, ajusta el rango y pulsa "Ejecutar intento". Si quieres reiniciar la configuración, usa el botón "Reiniciar configuración".</p>
+              </div>
+              <div>
+                <h2>Opciones disponibles</h2>
+                <p>Los botones del menú cambian de pestaña: <strong>Jugar</strong>, <strong>Historial</strong>, <strong>Logros</strong> y <strong>Soporte</strong>.</p>
+              </div>
+              <div>
+                <h2>Notas</h2>
+                <p>La información global se carga desde el servidor y puede tardar unos segundos en aparecer.</p>
+              </div>
+            </div>
+          </section>
+        </section>
+      );
+    }
+
+    return (
+      <section className="content-grid">
+        <section className="panel panel--settings">
+          <div className="panel__header">
+            <span>AJUSTES DE DIFICULTAD</span>
+            <span className="badge">{difficultyData.label}</span>
+          </div>
+          <div className="difficulty-cards">
+            {Object.entries(modes).map(([key, item]) => (
+              <button
+                type="button"
+                key={key}
+                className={`diff-card ${key === mode ? 'active' : ''} diff-card--${key}`}
+                onClick={() => applyMode(key)}
+              >
+                <span>{item.label}</span>
+                <small>{`${item.min}-${item.max} · ${item.attempts === 999 ? 'Intentos ilimitados' : `${item.attempts} intentos`}`}</small>
+              </button>
+            ))}
+          </div>
+          <div className="settings-grid">
+            <label>
+              Límite mínimo
+              <input
+                type="number"
+                min="1"
+                value={min}
+                onChange={(event) => setMin(Number(event.target.value))}
+              />
+            </label>
+            <label>
+              Límite máximo
+              <input
+                type="number"
+                min="2"
+                value={max}
+                onChange={(event) => setMax(Number(event.target.value))}
+              />
+            </label>
+            <label>
+              Máximo de intentos
+              <input
+                type="number"
+                min="1"
+                value={attempts}
+                onChange={(event) => setAttempts(Number(event.target.value))}
+              />
+            </label>
+          </div>
+          <div className="settings-actions">
+            <span className="info-text">Puntaje personal: {record}</span>
+            <button type="button" className="secondary-btn" onClick={resetConfig}>
+              Reiniciar configuración
+            </button>
+          </div>
+        </section>
+
+        <section className="panel panel--game">
+          <div className="panel__header panel__header--alt">
+            <span>Secuencia Éter Activa</span>
+            <span className="hint">{feedback}</span>
+          </div>
+          <div className="game-card">
+            <div className="display-number">{currentGuess}</div>
+            <div className="input-row">
+              <input
+                type="number"
+                placeholder="Tu intento"
+                aria-label="Tu intento"
+                value={guess}
+                onChange={(event) => setGuess(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') {
+                    handleGuess();
+                  }
+                }}
+              />
+              <button type="button" className="primary-btn" onClick={handleGuess}>
+                Ejecutar intento
+              </button>
+            </div>
+          </div>
+          <div className="stats-grid">
+            <div className="metric">
+              <span>Vidas restantes</span>
+              <strong>{remainingAttempts}</strong>
+            </div>
+            <div className="metric">
+              <span>Racha actual</span>
+              <strong>{String(gamesWon).padStart(2, '0')}</strong>
+            </div>
+            <div className="metric">
+              <span>Precisión</span>
+              <strong>{precision}%</strong>
+            </div>
+          </div>
+        </section>
+
+        <aside className="panel panel--history">
+          <div className="panel__header">
+            <span>Historial de eventos</span>
+            <span>{historyLabel}</span>
+          </div>
+          <ul className="history-list">
+            {history.map((entry) => (
+              <li key={entry.index} className={`history-item ${entry.outcome}`}>
+                <span className="history-item__badge">
+                  {entry.outcome === 'success' ? 'Correcto' : entry.outcome === 'higher' ? 'Más alto' : 'Más bajo'}
+                </span>
+                <div>
+                  <span>Intento {entry.index}</span>
+                  <strong>{entry.guess}</strong>
+                </div>
+                <span>{entry.message}</span>
+              </li>
+            ))}
+            {history.length === 0 && <li className="history-item empty">Aún no hay eventos registrados.</li>}
+          </ul>
+        </aside>
+      </section>
+    );
+  }
+
   return (
     <div className="app shell">
       <aside className="sidebar">
@@ -223,10 +438,21 @@ export default function HomePage() {
           </div>
         </div>
         <nav className="menu">
-          <button className="menu__item menu__item--active" type="button">Jugar</button>
-          <button className="menu__item" type="button">Historial</button>
-          <button className="menu__item" type="button">Logros</button>
-          <button className="menu__item" type="button">Soporte</button>
+          {[
+            { key: 'game', label: 'Jugar' },
+            { key: 'history', label: 'Historial' },
+            { key: 'achievements', label: 'Logros' },
+            { key: 'support', label: 'Soporte' },
+          ].map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              className={`menu__item ${activeTab === tab.key ? 'menu__item--active' : ''}`}
+              onClick={() => setActiveTab(tab.key)}
+            >
+              {tab.label}
+            </button>
+          ))}
         </nav>
         <div className="theme-toggle">
           <span>Modo</span>
@@ -248,125 +474,7 @@ export default function HomePage() {
           <div className="status-card">Estado: {status}</div>
         </header>
 
-        <section className="content-grid">
-          <section className="panel panel--settings">
-            <div className="panel__header">
-              <span>AJUSTES DE DIFICULTAD</span>
-              <span className="badge">{difficultyData.label}</span>
-            </div>
-            <div className="difficulty-cards">
-              {Object.entries(modes).map(([key, item]) => (
-                <button
-                  type="button"
-                  key={key}
-                  className={`diff-card ${key === mode ? 'active' : ''} diff-card--${key}`}
-                  onClick={() => applyMode(key)}
-                >
-                  <span>{item.label}</span>
-                  <small>{`${item.min}-${item.max} · ${item.attempts === 999 ? 'Intentos ilimitados' : `${item.attempts} intentos`}`}</small>
-                </button>
-              ))}
-            </div>
-            <div className="settings-grid">
-              <label>
-                Límite mínimo
-                <input
-                  type="number"
-                  min="1"
-                  value={min}
-                  onChange={(event) => setMin(Number(event.target.value))}
-                />
-              </label>
-              <label>
-                Límite máximo
-                <input
-                  type="number"
-                  min="2"
-                  value={max}
-                  onChange={(event) => setMax(Number(event.target.value))}
-                />
-              </label>
-              <label>
-                Máximo de intentos
-                <input
-                  type="number"
-                  min="1"
-                  value={attempts}
-                  onChange={(event) => setAttempts(Number(event.target.value))}
-                />
-              </label>
-            </div>
-            <div className="settings-actions">
-              <span className="info-text">Puntaje personal: {record}</span>
-              <button type="button" className="secondary-btn" onClick={resetConfig}>
-                Reiniciar configuración
-              </button>
-            </div>
-          </section>
-
-          <section className="panel panel--game">
-            <div className="panel__header panel__header--alt">
-              <span>Secuencia Éter Activa</span>
-              <span className="hint">{feedback}</span>
-            </div>
-            <div className="game-card">
-              <div className="display-number">{currentGuess}</div>
-              <div className="input-row">
-                <input
-                  type="number"
-                  placeholder="Tu intento"
-                  aria-label="Tu intento"
-                  value={guess}
-                  onChange={(event) => setGuess(event.target.value)}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Enter') {
-                      handleGuess();
-                    }
-                  }}
-                />
-                <button type="button" className="primary-btn" onClick={handleGuess}>
-                  Ejecutar intento
-                </button>
-              </div>
-            </div>
-            <div className="stats-grid">
-              <div className="metric">
-                <span>Vidas restantes</span>
-                <strong>{remainingAttempts}</strong>
-              </div>
-              <div className="metric">
-                <span>Racha actual</span>
-                <strong>{String(gamesWon).padStart(2, '0')}</strong>
-              </div>
-              <div className="metric">
-                <span>Precisión</span>
-                <strong>{precision}%</strong>
-              </div>
-            </div>
-          </section>
-
-          <aside className="panel panel--history">
-            <div className="panel__header">
-              <span>Historial de eventos</span>
-              <span>{historyLabel}</span>
-            </div>
-            <ul className="history-list">
-              {history.map((entry) => (
-                <li key={entry.index} className={`history-item ${entry.outcome}`}>
-                  <span className="history-item__badge">
-                    {entry.outcome === 'success' ? 'Correcto' : entry.outcome === 'higher' ? 'Más alto' : 'Más bajo'}
-                  </span>
-                  <div>
-                    <span>Intento {entry.index}</span>
-                    <strong>{entry.guess}</strong>
-                  </div>
-                  <span>{entry.message}</span>
-                </li>
-              ))}
-              {history.length === 0 && <li className="history-item empty">Aún no hay eventos registrados.</li>}
-            </ul>
-          </aside>
-        </section>
+        {renderMainContent()}
       </main>
     </div>
   );

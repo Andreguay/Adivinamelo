@@ -4,7 +4,7 @@ import random
 # Configuración inicial
 ventana = tk.Tk()
 ventana.title("Atrapa el Objetivo")
-ventana.geometry("400x400")
+ventana.geometry("1000x1000")
 
 puntaje = 0
 objetivo = None
@@ -24,7 +24,7 @@ def crear_objetivo():
         ventana,
         text="¡Clic aquí!",
         bg="green",
-        fg="white",
+        fg="black",
         command=sumar_punto,
         font="Arial 12 bold"
     )
